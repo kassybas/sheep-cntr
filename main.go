@@ -1,19 +1,37 @@
 package main
 
 import "fmt"
-import "os"
-import "strconv"
-import "math"
+import "time"
+
+var inChan chan string
+
+func countMe(s string, limit int) {
+	for i := 0; i < limit; i++ {
+		fmt.Printf("%d %s\n", i+1, s)
+		time.Sleep(time.Millisecond)
+	}
+}
 
 func main() {
-	var i uint64 = 1
-	x, err := strconv.Atoi(os.Args[1])
-	var limit uint64 = uint64(math.Pow10(x))
-	if err != nil {
-		fmt.Println(err, "Parmater is not a number")
+	inChan = make(chan string)
+	go startMe()
+	inChan <- "sheep"
+	inChan <- "wolf"
+	inChan <- "beef"
+	time.Sleep(10 * time.Second)
+}
+
+func startMe() {
+	done := false
+	for done != true {
+		select {
+		case s := <-inChan:
+			countMe(s, 1000)
+		default:
+			done = true
+			fmt.Println("all good")
+		}
 	}
-	for i < limit+1 {
-		fmt.Printf("%d sheep\n", i)
-		i++
-	}
+	fmt.Println("We are done")
+	inChan = make(chan string)
 }
